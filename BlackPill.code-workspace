@@ -1,0 +1,14 @@
+{
+    "folders": [
+        {
+            "path": "."
+        }
+    ],
+    "settings": {
+        "files.associations": {
+            "stm32f4xx_hal_adc_ex.h": "c",
+            "stm32f4xx_hal_def.h": "c"
+        }
+    },
+    "extensions": {}
+}
