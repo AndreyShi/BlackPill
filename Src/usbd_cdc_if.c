@@ -181,7 +181,7 @@ static int8_t CDC_DeInit_FS(void)
 static int8_t CDC_Control_FS(uint8_t cmd, uint8_t* pbuf, uint16_t length)
 {
   /* USER CODE BEGIN 5 */
-  USBD_SetupReqTypedef* req = (USBD_SetupReqTypedef*)pbuf;
+
   switch(cmd)
   {
     case CDC_SEND_ENCAPSULATED_COMMAND:
@@ -230,11 +230,23 @@ static int8_t CDC_Control_FS(uint8_t cmd, uint8_t* pbuf, uint16_t length)
     break;
 
     case CDC_SET_CONTROL_LINE_STATE:
-        if (*pbuf & 0x01) {  //биты DTR (wValue & 0x01) и RTS (wValue & 0x02).
-            usb_com_open = 1;  // Порт открыт (например, терминал подключен)
-        } else {
-            usb_com_open = 0;  // Порт закрыт
-        }
+    //биты DTR(Data Terminal Ready)  (wValue & 0x01) и RTS(Request To Send) (wValue & 0x02).
+    //wValue=1 — Порт открыт (DTR).
+    //wValue=2 — Ручное управление RTS (редко).
+    //wValue=3 — Порт открыт с поддержкой RTS/CTS.
+    //при length == 0 передается структура, при length != 0 передается массив
+    #define DTR_BIT 0x01
+    #define RTS_BIT 0x02
+    if(length == 0){
+      USBD_SetupReqTypedef* req = (USBD_SetupReqTypedef*)pbuf;
+      //делаем по & потому что сначала придет 1(DTR) потом 3 (DTR + RTS)
+      //можно конечно написать req->wValue == 1 || req->wValue == 3, а если
+      //не только 1 и 3? вообщем вариант с & более универсальный
+      if(req->wValue & DTR_BIT)
+          { usb_com_open = 1;}
+      else
+          { usb_com_open = 0;}
+    }
     break;
 
     case CDC_SEND_BREAK:
