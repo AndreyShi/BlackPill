@@ -140,10 +140,9 @@ int main(void)
 
     uint32_t adcValue = HAL_ADC_GetValue(&hadc1);
     float voltage = adcValue * (VccRef / AdcResolution); // Получаем напряжение
-    printf("voltage: %.3f",voltage);
     //===измерение R через делитель напряжения
     float rxResistance = knownResistor * (voltage/(Vcc - voltage));
-    printf(" rxResistance: %.3f\n",rxResistance);
+    printf("voltage: %.3f rxResistance: %.3f\n",voltage,rxResistance);
 
     /* USER CODE END WHILE */
 
