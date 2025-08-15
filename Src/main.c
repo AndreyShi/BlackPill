@@ -24,6 +24,7 @@
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
 #include "usbd_cdc_if.h"
+#include "ads1115.h"
 extern uint8_t usb_com_open;
 extern uint8_t usb_trans_ok;
 /* USER CODE END Includes */
@@ -66,8 +67,10 @@ static void MX_I2C1_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+
 // Заводское калибровочное значение VREFINT (для STM32F401)
-#define VREFINT_CAL_ADDR 0x1FFF7A2A
+//#define VREFINT_CAL_ADDR 0x1FFF7A2A
 
 
 float Read_VDD() {
@@ -122,7 +125,7 @@ int main(void)
   MX_USB_DEVICE_Init();
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
-
+  ADS1115_Init();  // Инициализация ADS1115
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -137,16 +140,23 @@ int main(void)
     HAL_ADC_Start(&hadc1);
     HAL_ADC_PollForConversion(&hadc1, 100);
 
-    const int knownResistor = 2177;            // �?звестный резистор R1 номинал 2.2 КОм(2,177 кОм)(измерил мультиметром)
-    const float VccRef = 3.331;                // Напряжение референс ADC(если точно 3,331В)
-    const float Vcc = 4.756;                   // Напряжение питания делителя напряжения для рассчета сопротивления, (измерил мультиметром)
-    const float AdcResolution = 4095.0;        // разрешение АЦП STM32 12 bit (4095)
+    const int knownResistor = 2177;            // �?звестный резистор R1 номинал 2.2 КОм(2,177 кОм)(измерил мультиметром)
+    //const float VccRef = 3.331;                // Напряжение референс ADC(если точно 3,331В)
+    const float Vcc_volt_div = 4.756;            // Напряжение питания делителя напряжения для рассчета сопротивления, (измерил мультиметром)
+    //const float AdcResolution = 4095.0;        // разрешение АЦП STM32 12 bit (4095)
 
-    uint32_t adcValue = HAL_ADC_GetValue(&hadc1);
-    float voltage = adcValue * (VccRef / AdcResolution); // Получаем напряжение
+    //uint32_t adcValue = HAL_ADC_GetValue(&hadc1);
+    //float voltage = adcValue * (VccRef / AdcResolution); // Получаем напряжение
     //===измерение R через делитель напряжения
-    float rxResistance = knownResistor * (voltage/(Vcc - voltage));
-    printf("voltage: %.3f rxResistance: %.3f\n",voltage,rxResistance);
+    //float rxResistance = knownResistor * (voltage/(Vcc_volt_div - voltage));
+    //printf("voltage: %.3f rxResistance: %.3f\n",voltage,rxResistance);
+
+    int16_t adcValue = ADS1115_ReadDiff_A0_A1();
+    float voltage = (float)adcValue * 2.048f / 32767.0f;  // ±2.048V, 16 бит
+
+    //===измерение R через делитель напряжения
+    float rxResistance = knownResistor * (voltage/(Vcc_volt_div - voltage));
+    printf("ADC: %d, Voltage: %.4f V xResistor %.3f ohm\n", adcValue, voltage, rxResistance);
 
     /* USER CODE END WHILE */
 
