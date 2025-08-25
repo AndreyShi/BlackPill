@@ -20,13 +20,13 @@ uint16_t ADS1115_ReadReg(uint8_t reg) {
 
 // Инициализация ADS1115
 void ADS1115_Init() {
-    ADS1115_WriteReg(ADS1115_REG_CONFIG, ADS1115_CONFIG_DIFF_A0_A1);
+    ADS1115_WriteReg(ADS1115_REG_CONFIG, ADS1115_CONFIG_SINGLE_A0);
 }
 
 // Чтение дифференциального значения (A0 - A1)
 int16_t ADS1115_ReadDiff_A0_A1() {
     // Запускаем преобразование (если в режиме однократного преобразования)
-    ADS1115_WriteReg(ADS1115_REG_CONFIG, ADS1115_CONFIG_DIFF_A0_A1 | 0x8000);
+    ADS1115_WriteReg(ADS1115_REG_CONFIG, ADS1115_CONFIG_SINGLE_A0 | 0x8000);
     HAL_Delay(10);  // Ждём завершения преобразования (~8ms при 128 SPS)
     return (int16_t)ADS1115_ReadReg(ADS1115_REG_CONV);
 }
