@@ -23,8 +23,10 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
+#include <stdbool.h>
 #include "usbd_cdc_if.h"
 #include "ads1115.h"
+#include "ssd1306.h"
 extern uint8_t usb_com_open;
 extern uint8_t usb_trans_ok;
 /* USER CODE END Includes */
@@ -126,6 +128,17 @@ int main(void)
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
   ADS1115_Init();  // Инициализация ADS1115
+  OLED_Init(&oled, &hi2c1);
+  OLED_FlipHorizontal(&oled,1);
+  OLED_FlipVertical(&oled, 1);
+  OLED_InvertColors(&oled, true);
+      // Вывод текста на 4 строки
+    OLED_WriteString(0,&oled,0,0, "Hello");
+    OLED_WriteString(0,&oled,1,0, "World");
+    OLED_WriteString(0,&oled,2,0, "Line 3");
+    OLED_WriteString(1,&oled,3,0, "Line 4");
+    OLED_Clear(&oled);
+    
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -157,7 +170,10 @@ int main(void)
     //===измерение R через делитель напряжения
     float rxResistance = knownResistor * (voltage/(Vcc_volt_div - voltage));
     printf("ADC: %d, Voltage: %.4f V xResistor %.3f ohm\n", adcValue, voltage, rxResistance);
-
+    OLED_Clear(&oled);
+    OLED_WriteString(0,&oled, 0, 0, "ADC: %d",adcValue);
+    OLED_WriteString(0, &oled, 1, 0, "Vol: %.3f v",voltage);
+    OLED_WriteString(1, &oled, 2, 0, "Res: %.3f ohm",rxResistance);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
