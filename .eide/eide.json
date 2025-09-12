@@ -73,18 +73,15 @@
           "afterBuildTasks": [],
           "global": {
             "$float-abi-type": "hard",
-            "output-debug-info": "enable",
-            "misc-control": []
+            "output-debug-info": "enable"
           },
           "c/cpp-compiler": {
             "language-c": "c11",
             "language-cpp": "c++11",
-            "optimization": "level-debug",
+            "optimization": "level-size",
             "warnings": "all-warnings",
             "one-elf-section-per-function": true,
-            "one-elf-section-per-data": true,
-            "C_FLAGS": "",
-            "CXX_FLAGS": ""
+            "one-elf-section-per-data": true
           },
           "asm-compiler": {
             "ASM_FLAGS": "-DDEBUG"
@@ -93,7 +90,7 @@
             "output-format": "elf",
             "remove-unused-input-sections": true,
             "LD_FLAGS": "-TSTM32F401CCUX_FLASH.ld",
-            "LIB_FLAGS": ""
+            "$toolName": "auto"
           }
         }
       }

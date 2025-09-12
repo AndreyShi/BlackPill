@@ -167,13 +167,38 @@ int main(void)
     const float Vcc_volt_div = 4.756;            // Напряжение питания делителя напряжения для рассчета сопротивления, (измерил мультиметром)
     //const float AdcResolution = 4095.0;        // разрешение АЦП STM32 12 bit (4095)
     //example_usage();
+    //HAL_GPIO_WritePin(CS__GPIO_Port, CS__Pin, GPIO_PIN_RESET);
+    uint8_t res = MCP2515_Read_Register(0x0E);
+    //HAL_GPIO_WritePin(CS__GPIO_Port, CS__Pin, GPIO_PIN_SET);
+    printf("%d\n", res);
+    /*
+    HAL_GPIO_WritePin(CS__GPIO_Port, CS__Pin, GPIO_PIN_RESET);
     hspi1.Instance->DR = 0x03;//160;//read register
-    while(!__HAL_SPI_GET_FLAG(&hspi1, SPI_FLAG_TXE)){;}
+    while(!(__HAL_SPI_GET_FLAG(&hspi1, SPI_FLAG_TXE))){;}
     hspi1.Instance->DR = 0x0E;
-    while(!__HAL_SPI_GET_FLAG(&hspi1, SPI_FLAG_TXE)){;}
+    while(!(__HAL_SPI_GET_FLAG(&hspi1, SPI_FLAG_TXE))){;}
     hspi1.Instance->DR = 0x00;
-    while(!__HAL_SPI_GET_FLAG(&hspi1, SPI_FLAG_RXNE)){;}
-    printf("%d\n",hspi1.Instance->DR);
+    while(!(__HAL_SPI_GET_FLAG(&hspi1, SPI_FLAG_TXE))){;}
+    while(!(__HAL_SPI_GET_FLAG(&hspi1, SPI_FLAG_RXNE))){;}
+    printf("%d\n", hspi1.Instance->DR);
+    HAL_Delay(1);
+    HAL_GPIO_WritePin(CS__GPIO_Port, CS__Pin, GPIO_PIN_SET);
+    */
+    /*
+    //read status
+    HAL_GPIO_WritePin(CS__GPIO_Port, CS__Pin, GPIO_PIN_RESET);
+    hspi1.Instance->DR = 160;//read register
+    while(!(__HAL_SPI_GET_FLAG(&hspi1, SPI_FLAG_TXE))){;}
+    hspi1.Instance->DR = 0x00;
+    while(!(__HAL_SPI_GET_FLAG(&hspi1, SPI_FLAG_TXE))){;}
+    hspi1.Instance->DR = 0x00;
+    while(!(__HAL_SPI_GET_FLAG(&hspi1, SPI_FLAG_TXE))){;}
+    while(!(__HAL_SPI_GET_FLAG(&hspi1, SPI_FLAG_RXNE))){;}
+    printf("%d\n", hspi1.Instance->DR);
+    HAL_Delay(1);
+    HAL_GPIO_WritePin(CS__GPIO_Port, CS__Pin, GPIO_PIN_SET);
+    */
+
     //uint32_t adcValue = HAL_ADC_GetValue(&hadc1);
     //float voltage = adcValue * (VccRef / AdcResolution); // Получаем напряжение
     //===измерение R через делитель напряжения
@@ -350,7 +375,7 @@ static void MX_SPI1_Init(void)
   hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
-  hspi1.Init.NSS = SPI_NSS_HARD_OUTPUT;
+  hspi1.Init.NSS = SPI_NSS_SOFT;
   hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_64;
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
@@ -419,12 +444,22 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
 
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(CS__GPIO_Port, CS__Pin, GPIO_PIN_SET);
+
   /*Configure GPIO pin : PC13 */
   GPIO_InitStruct.Pin = GPIO_PIN_13;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : CS__Pin */
+  GPIO_InitStruct.Pin = CS__Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(CS__GPIO_Port, &GPIO_InitStruct);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
