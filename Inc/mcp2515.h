@@ -1,11 +1,36 @@
 #include <stdint.h>
 
-// Определяем команды для MCP2515 согласно datasheet
-#define MCP2515_CMD_READ    0x03
-// Можно добавить другие команды для полноты:
-// #define MCP2515_CMD_WRITE   0x02
-// #define MCP2515_CMD_RTS     0x80
-// #define MCP2515_CMD_READ_RX 0x90
+/* Defines ------------------------------------------------------------------*/
+// Команды MCP2515
+#define MCP2515_CMD_READ          0x03
+#define MCP2515_CMD_WRITE         0x02
+#define MCP2515_CMD_BIT_MODIFY    0x05
+#define MCP2515_CMD_RTS_TX0       0x81
+
+// Важные регистры MCP2515
+#define MCP2515_REG_CANCTRL       0x0F
+#define MCP2515_REG_CANSTAT       0x0E
+#define MCP2515_REG_CNF1          0x2A
+#define MCP2515_REG_CNF2          0x29
+#define MCP2515_REG_CNF3          0x28
+#define MCP2515_REG_CANINTE       0x2B
+#define MCP2515_REG_CANINTF       0x2C
+#define MCP2515_REG_TXB0CTRL      0x30
+#define MCP2515_REG_TXB0SIDH      0x31
+#define MCP2515_REG_TXB0SIDL      0x32
+#define MCP2515_REG_TXB0DLC       0x35
+#define MCP2515_REG_TXB0D0        0x36
+#define MCP2515_REG_RXB0CTRL      0x60
+#define MCP2515_REG_RXB0SIDH      0x61
+#define MCP2515_REG_RXB0DLC       0x65
+#define MCP2515_REG_RXB0D0        0x66
+
+// CAN ID для OBD (ISO 15765-4)
+#define CAN_OBD_REQUEST_ID        0x7DF   // Широковещательный запрос
+#define CAN_OBD_RESPONSE_ID       0x7E8   // Ответ от двигателя
+
+// PID коды
+#define PID_ENGINE_RPM            0x0C
 
 /**
   * @brief  Чтение одного регистра MCP2515.
@@ -29,6 +54,35 @@ void MCP2515_Write_Register(uint8_t reg_addr,uint8_t reg_data);
   * @retval None
   */
 void MCP2515_Read_Registers(uint8_t start_reg_addr, uint8_t *buffer, uint8_t count);
+
+/*
+  *         Без использования прерываний (режим опроса).
+  */
+void MCP2515_Init_ISO15765(void);
+
+
+/**
+  * @brief  Инициализация MCP2515 с фильтром на OBD ответы
+  */
+void MCP2515_Init_With_Filter(void);
+
+
+/**
+  * @brief  Проверка и чтение принятого сообщения (режим опроса)
+  * @param  data: указатель на буфер для данных (минимум 8 байт)
+  * @retval 0 - сообщения нет, >0 - количество принятых байт
+  */
+uint8_t MCP2515_Read_Message_Polling(uint8_t *data);
+
+/**
+  * @brief  Отправка OBD2 запроса на получение RPM
+  */
+void MCP2515_Send_OBD_Request(uint16_t can_id, uint8_t pid);
+
+/**
+  * @brief  Парсинг RPM из данных OBD2 ответа
+  */
+float Parse_Engine_RPM(uint8_t *data, uint8_t length);
 
 // Пример использования в main.c или в другом месте
 void example_usage(void);

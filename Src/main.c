@@ -134,22 +134,20 @@ int main(void)
   /* USER CODE BEGIN 2 */
   //ADS1115_Init();  // �?нициализация ADS1115
   OLED_Init(&oled, &hi2c1);
-  OLED_FlipHorizontal(&oled,1);
-  OLED_FlipVertical(&oled, 1);
-  OLED_InvertColors(&oled, true);
+  //OLED_FlipHorizontal(&oled,1);
+  //OLED_FlipVertical(&oled, 1);
+  //OLED_InvertColors(&oled, true);
       // Вывод текста на 4 строки
-    OLED_WriteString(0,&oled,0,0, "Hello");
-    OLED_WriteString(0,&oled,1,0, "World");
-    OLED_WriteString(0,&oled,2,0, "Line 3");
-    OLED_WriteString(1,&oled,3,0, "Line 4");
-    OLED_Clear(&oled);
+    //OLED_WriteString(0,&oled,0,0, "Hello");
+    //OLED_WriteString(0,&oled,1,0, "World");
+    //OLED_WriteString(0,&oled,2,0, "Line 3");
+    //OLED_WriteString(1,&oled,3,0, "Line 4");
+    //OLED_Clear(&oled);
 
-
-  
-    int i = 0;
-    __HAL_SPI_ENABLE(&hspi1);
-    HAL_Delay(5);
-    MCP2515_Write_Register(0x0F,0x00);
+  uint8_t rx_data[8];
+  uint8_t data_length;
+  float engine_rpm = 0;
+  MCP2515_Init_With_Filter();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -162,60 +160,19 @@ int main(void)
     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
     HAL_Delay(500);
 
-    //HAL_ADC_Start(&hadc1);
-    //HAL_ADC_PollForConversion(&hadc1, 100);
-
-    const int knownResistor = 2177;            // �?звестный резистор R1 номинал 2.2 КОм(2,177 кОм)(измерил мультиметром)
-    //const float VccRef = 3.331;                // Напряжение референс ADC(если точно 3,331В)
-    const float Vcc_volt_div = 4.756;            // Напряжение питания делителя напряжения для рассчета сопротивления, (измерил мультиметром)
-    //const float AdcResolution = 4095.0;        // разрешение АЦП STM32 12 bit (4095)
-    //example_usage();
-    uint8_t res = MCP2515_Read_Register(0x0E);
-    printf("%d\n", res);
-    /*
-    HAL_GPIO_WritePin(CS__GPIO_Port, CS__Pin, GPIO_PIN_RESET);
-    hspi1.Instance->DR = 0x03;//160;//read register
-    while(!(__HAL_SPI_GET_FLAG(&hspi1, SPI_FLAG_TXE))){;}
-    hspi1.Instance->DR = 0x0E;
-    while(!(__HAL_SPI_GET_FLAG(&hspi1, SPI_FLAG_TXE))){;}
-    hspi1.Instance->DR = 0x00;
-    while(!(__HAL_SPI_GET_FLAG(&hspi1, SPI_FLAG_TXE))){;}
-    while(!(__HAL_SPI_GET_FLAG(&hspi1, SPI_FLAG_RXNE))){;}
-    printf("%d\n", hspi1.Instance->DR);
-    HAL_Delay(1);
-    HAL_GPIO_WritePin(CS__GPIO_Port, CS__Pin, GPIO_PIN_SET);
-    */
-    /*
-    //read status
-    HAL_GPIO_WritePin(CS__GPIO_Port, CS__Pin, GPIO_PIN_RESET);
-    hspi1.Instance->DR = 160;//read register
-    while(!(__HAL_SPI_GET_FLAG(&hspi1, SPI_FLAG_TXE))){;}
-    hspi1.Instance->DR = 0x00;
-    while(!(__HAL_SPI_GET_FLAG(&hspi1, SPI_FLAG_TXE))){;}
-    hspi1.Instance->DR = 0x00;
-    while(!(__HAL_SPI_GET_FLAG(&hspi1, SPI_FLAG_TXE))){;}
-    while(!(__HAL_SPI_GET_FLAG(&hspi1, SPI_FLAG_RXNE))){;}
-    printf("%d\n", hspi1.Instance->DR);
-    HAL_Delay(1);
-    HAL_GPIO_WritePin(CS__GPIO_Port, CS__Pin, GPIO_PIN_SET);
-    */
-
-    //uint32_t adcValue = HAL_ADC_GetValue(&hadc1);
-    //float voltage = adcValue * (VccRef / AdcResolution); // Получаем напряжение
-    //===измерение R через делитель напряжения
-    //float rxResistance = knownResistor * (voltage/(Vcc_volt_div - voltage));
-    //printf("voltage: %.3f rxResistance: %.3f\n",voltage,rxResistance);
-
-    //int16_t adcValue = ADS1115_ReadDiff_A0_A1();
-    //float voltage = (float)adcValue * 2.048f / 32767.0f;  // ±2.048V, 16 бит
-
-    //===измерение R через делитель напряжения
-    //float rxResistance = knownResistor * (voltage/(Vcc_volt_div - voltage));
-    //printf("ADC: %d, Voltage: %.4f V xResistor %.3f ohm\n", adcValue, voltage, rxResistance);
-    //OLED_Clear(&oled);
-    //OLED_WriteString(0,&oled, 0, 0, "ADC: %d",adcValue);
-    //OLED_WriteString(0, &oled, 1, 0, "Vol: %.3f v",voltage);
-    //OLED_WriteString(1, &oled, 2, 0, "Res: %.3f ohm",rxResistance);
+         // Отправляем запрос RPM
+    MCP2515_Send_OBD_Request(CAN_OBD_REQUEST_ID, PID_ENGINE_RPM);
+    
+    // Ждем немного, пока придет ответ (зависит от сети и ЭБУ)
+    HAL_Delay(50); 
+    
+    // ОПРАШИВАЕМ контроллер на наличие сообщения
+    data_length = MCP2515_Read_Message_Polling(rx_data);
+    
+    if (data_length > 0) {
+      engine_rpm = Parse_Engine_RPM(rx_data, data_length);
+      printf("rmp: %f\n",engine_rpm);
+    }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
