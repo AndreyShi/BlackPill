@@ -27,6 +27,7 @@
 #include "usbd_cdc_if.h"
 #include "ads1115.h"
 #include "ssd1306.h"
+#include "mcp2515.h"
 extern uint8_t usb_com_open;
 extern uint8_t usb_trans_ok;
 /* USER CODE END Includes */
@@ -142,7 +143,11 @@ int main(void)
     OLED_WriteString(0,&oled,2,0, "Line 3");
     OLED_WriteString(1,&oled,3,0, "Line 4");
     OLED_Clear(&oled);
-    
+
+
+  
+    int i = 0;
+    __HAL_SPI_ENABLE(&hspi1);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -150,18 +155,25 @@ int main(void)
   while (1)
   {
     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
-    HAL_Delay(250);
+    HAL_Delay(500);
     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
-    HAL_Delay(250);
+    HAL_Delay(500);
 
-    HAL_ADC_Start(&hadc1);
-    HAL_ADC_PollForConversion(&hadc1, 100);
+    //HAL_ADC_Start(&hadc1);
+    //HAL_ADC_PollForConversion(&hadc1, 100);
 
     const int knownResistor = 2177;            // �?звестный резистор R1 номинал 2.2 КОм(2,177 кОм)(измерил мультиметром)
     //const float VccRef = 3.331;                // Напряжение референс ADC(если точно 3,331В)
     const float Vcc_volt_div = 4.756;            // Напряжение питания делителя напряжения для рассчета сопротивления, (измерил мультиметром)
     //const float AdcResolution = 4095.0;        // разрешение АЦП STM32 12 bit (4095)
-
+    //example_usage();
+    hspi1.Instance->DR = 0x03;//160;//read register
+    while(!__HAL_SPI_GET_FLAG(&hspi1, SPI_FLAG_TXE)){;}
+    hspi1.Instance->DR = 0x0E;
+    while(!__HAL_SPI_GET_FLAG(&hspi1, SPI_FLAG_TXE)){;}
+    hspi1.Instance->DR = 0x00;
+    while(!__HAL_SPI_GET_FLAG(&hspi1, SPI_FLAG_RXNE)){;}
+    printf("%d\n",hspi1.Instance->DR);
     //uint32_t adcValue = HAL_ADC_GetValue(&hadc1);
     //float voltage = adcValue * (VccRef / AdcResolution); // Получаем напряжение
     //===измерение R через делитель напряжения
