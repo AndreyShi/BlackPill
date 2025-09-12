@@ -51,6 +51,7 @@ extern uint8_t usb_trans_ok;
 ADC_HandleTypeDef hadc1;
 
 I2C_HandleTypeDef hi2c1;
+I2C_HandleTypeDef hi2c3;
 
 SPI_HandleTypeDef hspi1;
 
@@ -67,6 +68,7 @@ static void MX_ADC1_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_SPI1_Init(void);
+static void MX_I2C3_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -131,18 +133,19 @@ int main(void)
   MX_USB_DEVICE_Init();
   MX_I2C1_Init();
   MX_SPI1_Init();
+  MX_I2C3_Init();
   /* USER CODE BEGIN 2 */
   //ADS1115_Init();  // �?нициализация ADS1115
-  OLED_Init(&oled, &hi2c1);
-  //OLED_FlipHorizontal(&oled,1);
-  //OLED_FlipVertical(&oled, 1);
-  //OLED_InvertColors(&oled, true);
+  OLED_Init(&oled, &hi2c3);
+  OLED_FlipHorizontal(&oled,1);
+  OLED_FlipVertical(&oled, 1);
+  OLED_InvertColors(&oled, true);
       // Вывод текста на 4 строки
-    //OLED_WriteString(0,&oled,0,0, "Hello");
-    //OLED_WriteString(0,&oled,1,0, "World");
-    //OLED_WriteString(0,&oled,2,0, "Line 3");
-    //OLED_WriteString(1,&oled,3,0, "Line 4");
-    //OLED_Clear(&oled);
+    OLED_WriteString(0,&oled,0,0, "Hello");
+    OLED_WriteString(0,&oled,1,0, "World");
+    OLED_WriteString(0,&oled,2,0, "Line 3");
+    OLED_WriteString(1,&oled,3,0, "Line 4");
+    OLED_Clear(&oled);
 
   uint8_t rx_data[8];
   uint8_t data_length;
@@ -166,13 +169,15 @@ int main(void)
     // Ждем немного, пока придет ответ (зависит от сети и ЭБУ)
     HAL_Delay(50); 
     
-    // ОПРАШИВАЕМ контроллер на наличие сообщения
+    // ОПРАШ�?ВАЕМ контроллер на наличие сообщения
     data_length = MCP2515_Read_Message_Polling(rx_data);
     
     if (data_length > 0) {
       engine_rpm = Parse_Engine_RPM(rx_data, data_length);
       printf("rmp: %f\n",engine_rpm);
+      OLED_WriteString(0,&oled,1,0, "rmp: %d\n",engine_rpm);
     }
+    OLED_WriteString(1,&oled,0,0, "data_length: %d\n",data_length);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -308,6 +313,40 @@ static void MX_I2C1_Init(void)
   /* USER CODE BEGIN I2C1_Init 2 */
 
   /* USER CODE END I2C1_Init 2 */
+
+}
+
+/**
+  * @brief I2C3 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_I2C3_Init(void)
+{
+
+  /* USER CODE BEGIN I2C3_Init 0 */
+
+  /* USER CODE END I2C3_Init 0 */
+
+  /* USER CODE BEGIN I2C3_Init 1 */
+
+  /* USER CODE END I2C3_Init 1 */
+  hi2c3.Instance = I2C3;
+  hi2c3.Init.ClockSpeed = 100000;
+  hi2c3.Init.DutyCycle = I2C_DUTYCYCLE_2;
+  hi2c3.Init.OwnAddress1 = 0;
+  hi2c3.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  hi2c3.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+  hi2c3.Init.OwnAddress2 = 0;
+  hi2c3.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+  hi2c3.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+  if (HAL_I2C_Init(&hi2c3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN I2C3_Init 2 */
+
+  /* USER CODE END I2C3_Init 2 */
 
 }
 
