@@ -136,7 +136,7 @@ int main(void)
   MX_I2C3_Init();
   /* USER CODE BEGIN 2 */
   //ADS1115_Init();  // �?нициализация ADS1115
-  OLED_Init(&oled, &hi2c3);
+  OLED_Init(&oled, &hi2c1);
   OLED_FlipHorizontal(&oled,1);
   OLED_FlipVertical(&oled, 1);
   OLED_InvertColors(&oled, true);
