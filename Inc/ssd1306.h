@@ -42,6 +42,8 @@ void OLED_UpdateScreen(OLED_HandleTypeDef *oled);
 // Установка позиции курсора
 void OLED_SetCursor(OLED_HandleTypeDef *oled, uint8_t x, uint8_t y);
 
+void OLED_ClearCharArea(OLED_HandleTypeDef *oled, uint8_t x, uint8_t y);
+
 // Простой вывод символа (базовый шрифт 5x7)
 void OLED_WriteChar(OLED_HandleTypeDef *oled, char ch);
 

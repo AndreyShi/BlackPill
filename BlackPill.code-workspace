@@ -8,7 +8,8 @@
         "files.associations": {
             "stm32f4xx_hal_adc_ex.h": "c",
             "stm32f4xx_hal_def.h": "c",
-            "main.h": "c"
+            "main.h": "c",
+            "ssd1306.h": "c"
         }
     },
     "extensions": {}

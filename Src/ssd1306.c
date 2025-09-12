@@ -82,9 +82,31 @@ void OLED_SetCursor(OLED_HandleTypeDef *oled, uint8_t x, uint8_t y) {
     oled->currentY = y;
 }
 
+// Очистка области под символ
+void OLED_ClearCharArea(OLED_HandleTypeDef *oled, uint8_t x, uint8_t y) {
+    // Очищаем область 7x8 пикселей (5x7 символ + отступы)
+    for (uint8_t i = 0; i < 7; i++) {
+        uint8_t col = x + i;
+        if (col >= OLED_WIDTH) continue;
+        
+        for (uint8_t row = 0; row < 8; row++) {
+            uint8_t page = (y + row) / 8;
+            uint8_t bit_pos = (y + row) % 8;
+            uint16_t buffer_index = col + (page * OLED_WIDTH);
+            
+            if (buffer_index < sizeof(oled->buffer)) {
+                oled->buffer[buffer_index] &= ~(1 << bit_pos); // Очищаем бит
+            }
+        }
+    }
+}
+
 // Простой вывод символа (базовый шрифт 5x7)
 void OLED_WriteChar(OLED_HandleTypeDef *oled, char ch) {
     if (ch < 32 || ch > 127) return;
+
+        // Очищаем область перед выводом нового символа
+    OLED_ClearCharArea(oled, oled->currentX, oled->currentY);
     
     // Простой шрифт 5x7 (каждый символ занимает 5 байт)
     static const uint8_t font5x7[] = {

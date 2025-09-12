@@ -77,8 +77,9 @@ void MCP2515_Read_Registers(uint8_t start_reg_addr, uint8_t *buffer, uint8_t cou
   }
 
   // Выполняем передачу. Длина = 2 байта (команда+адрес) + количество запрашиваемых байт.
+  HAL_GPIO_WritePin(CS__GPIO_Port, CS__Pin, GPIO_PIN_RESET);
   HAL_SPI_TransmitReceive(&hspi1, tx_data, rx_data, 2 + count, HAL_MAX_DELAY);
-
+  HAL_GPIO_WritePin(CS__GPIO_Port, CS__Pin, GPIO_PIN_SET);
   // Копируем полезные данные из приемного буфера в выходной буфер.
   // Первые 2 байта (rx_data[0] и rx_data[1]) - мусор.
   // Последующие 'count' байт - это значения регистров, начиная с start_reg_addr.
@@ -199,7 +200,9 @@ void MCP2515_Send_OBD_Request(uint16_t can_id, uint8_t pid) {
 
   // 4. Запрашиваем отправку (RTS) для буфера TXB0
   uint8_t rts_cmd = MCP2515_CMD_RTS_TX0;
+  HAL_GPIO_WritePin(CS__GPIO_Port, CS__Pin, GPIO_PIN_RESET);
   HAL_SPI_Transmit(&hspi1, &rts_cmd, 1, HAL_MAX_DELAY);
+  HAL_GPIO_WritePin(CS__GPIO_Port, CS__Pin, GPIO_PIN_SET);
 }
 
 /**

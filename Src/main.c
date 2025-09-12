@@ -151,6 +151,7 @@ int main(void)
   uint8_t data_length;
   float engine_rpm = 0;
   MCP2515_Init_With_Filter();
+  int i = 0;
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -159,9 +160,9 @@ int main(void)
   {
 
     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
-    HAL_Delay(500);
+    HAL_Delay(250);
     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
-    HAL_Delay(500);
+    HAL_Delay(250);
 
          // Отправляем запрос RPM
     MCP2515_Send_OBD_Request(CAN_OBD_REQUEST_ID, PID_ENGINE_RPM);
@@ -171,12 +172,13 @@ int main(void)
     
     // ОПРАШ�?ВАЕМ контроллер на наличие сообщения
     data_length = MCP2515_Read_Message_Polling(rx_data);
-    
+
+    //OLED_Clear(&oled);
     if (data_length > 0) {
       engine_rpm = Parse_Engine_RPM(rx_data, data_length);
-      printf("rmp: %f\n",engine_rpm);
+      //printf("rmp: %f\n",engine_rpm);
       OLED_WriteString(0,&oled,1,0, "rmp: %d\n",engine_rpm);
-    }
+    }  
     OLED_WriteString(1,&oled,0,0, "data_length: %d\n",data_length);
     /* USER CODE END WHILE */
 
@@ -298,7 +300,7 @@ static void MX_I2C1_Init(void)
 
   /* USER CODE END I2C1_Init 1 */
   hi2c1.Instance = I2C1;
-  hi2c1.Init.ClockSpeed = 100000;
+  hi2c1.Init.ClockSpeed = 800000;
   hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
   hi2c1.Init.OwnAddress1 = 0;
   hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
