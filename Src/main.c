@@ -51,6 +51,8 @@ ADC_HandleTypeDef hadc1;
 
 I2C_HandleTypeDef hi2c1;
 
+SPI_HandleTypeDef hspi1;
+
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
@@ -63,6 +65,7 @@ static void MX_GPIO_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_I2C1_Init(void);
+static void MX_SPI1_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -126,8 +129,9 @@ int main(void)
   MX_USART2_UART_Init();
   MX_USB_DEVICE_Init();
   MX_I2C1_Init();
+  MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
-  ADS1115_Init();  // Инициализация ADS1115
+  //ADS1115_Init();  // �?нициализация ADS1115
   OLED_Init(&oled, &hi2c1);
   OLED_FlipHorizontal(&oled,1);
   OLED_FlipVertical(&oled, 1);
@@ -164,16 +168,16 @@ int main(void)
     //float rxResistance = knownResistor * (voltage/(Vcc_volt_div - voltage));
     //printf("voltage: %.3f rxResistance: %.3f\n",voltage,rxResistance);
 
-    int16_t adcValue = ADS1115_ReadDiff_A0_A1();
-    float voltage = (float)adcValue * 2.048f / 32767.0f;  // ±2.048V, 16 бит
+    //int16_t adcValue = ADS1115_ReadDiff_A0_A1();
+    //float voltage = (float)adcValue * 2.048f / 32767.0f;  // ±2.048V, 16 бит
 
     //===измерение R через делитель напряжения
-    float rxResistance = knownResistor * (voltage/(Vcc_volt_div - voltage));
-    printf("ADC: %d, Voltage: %.4f V xResistor %.3f ohm\n", adcValue, voltage, rxResistance);
-    OLED_Clear(&oled);
-    OLED_WriteString(0,&oled, 0, 0, "ADC: %d",adcValue);
-    OLED_WriteString(0, &oled, 1, 0, "Vol: %.3f v",voltage);
-    OLED_WriteString(1, &oled, 2, 0, "Res: %.3f ohm",rxResistance);
+    //float rxResistance = knownResistor * (voltage/(Vcc_volt_div - voltage));
+    //printf("ADC: %d, Voltage: %.4f V xResistor %.3f ohm\n", adcValue, voltage, rxResistance);
+    //OLED_Clear(&oled);
+    //OLED_WriteString(0,&oled, 0, 0, "ADC: %d",adcValue);
+    //OLED_WriteString(0, &oled, 1, 0, "Vol: %.3f v",voltage);
+    //OLED_WriteString(1, &oled, 2, 0, "Res: %.3f ohm",rxResistance);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -309,6 +313,44 @@ static void MX_I2C1_Init(void)
   /* USER CODE BEGIN I2C1_Init 2 */
 
   /* USER CODE END I2C1_Init 2 */
+
+}
+
+/**
+  * @brief SPI1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_SPI1_Init(void)
+{
+
+  /* USER CODE BEGIN SPI1_Init 0 */
+
+  /* USER CODE END SPI1_Init 0 */
+
+  /* USER CODE BEGIN SPI1_Init 1 */
+
+  /* USER CODE END SPI1_Init 1 */
+  /* SPI1 parameter configuration*/
+  hspi1.Instance = SPI1;
+  hspi1.Init.Mode = SPI_MODE_MASTER;
+  hspi1.Init.Direction = SPI_DIRECTION_2LINES;
+  hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
+  hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
+  hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
+  hspi1.Init.NSS = SPI_NSS_HARD_OUTPUT;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_64;
+  hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
+  hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
+  hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+  hspi1.Init.CRCPolynomial = 10;
+  if (HAL_SPI_Init(&hspi1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN SPI1_Init 2 */
+
+  /* USER CODE END SPI1_Init 2 */
 
 }
 
