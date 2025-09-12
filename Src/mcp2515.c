@@ -7,7 +7,7 @@ extern SPI_HandleTypeDef hspi1; // Объявляем внешнюю перем�
 // Определяем команды для MCP2515 согласно datasheet
 #define MCP2515_CMD_READ    0x03
 // Можно добавить другие команды для полноты:
-// #define MCP2515_CMD_WRITE   0x02
+ #define MCP2515_CMD_WRITE   0x02
 // #define MCP2515_CMD_RTS     0x80
 // #define MCP2515_CMD_READ_RX 0x90
 
@@ -30,8 +30,9 @@ uint8_t MCP2515_Read_Register(uint8_t reg_addr)
 
   // Выполняем полнодуплексную передачу.
   // HAL_SPI_TransmitReceive блокирующая, работает идеально для такого сценария.
-  // Автоматический NSS (PA4) опустится перед началом передачи и поднимется после.
+  HAL_GPIO_WritePin(CS__GPIO_Port, CS__Pin, GPIO_PIN_RESET);
   HAL_SPI_TransmitReceive(&hspi1, tx_data, rx_data, 3, HAL_MAX_DELAY);
+  HAL_GPIO_WritePin(CS__GPIO_Port, CS__Pin, GPIO_PIN_SET);
 
   // Анализируем принятые данные:
   // rx_data[0] - мусор (принимался, пока мы передавали команду)
@@ -39,6 +40,19 @@ uint8_t MCP2515_Read_Register(uint8_t reg_addr)
   result = rx_data[2];
 
   return result;
+}
+
+/**
+  * @brief  Запись одного регистра MCP2515.
+  * @param  reg_addr: Адрес регистра для записи 
+  * @param  reg_data: данные для записи 
+  */
+void MCP2515_Write_Register(uint8_t reg_addr,uint8_t reg_data){
+  uint8_t pData[3] = {MCP2515_CMD_WRITE,reg_addr, reg_data};
+
+  HAL_GPIO_WritePin(CS__GPIO_Port, CS__Pin, GPIO_PIN_RESET);
+  HAL_SPI_Transmit(&hspi1, pData, 3, HAL_MAX_DELAY);
+  HAL_GPIO_WritePin(CS__GPIO_Port, CS__Pin, GPIO_PIN_SET);
 }
 
 /**

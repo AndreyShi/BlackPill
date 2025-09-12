@@ -148,12 +148,15 @@ int main(void)
   
     int i = 0;
     __HAL_SPI_ENABLE(&hspi1);
+    HAL_Delay(5);
+    MCP2515_Write_Register(0x0F,0x00);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+
     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
     HAL_Delay(500);
     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
@@ -167,9 +170,7 @@ int main(void)
     const float Vcc_volt_div = 4.756;            // Напряжение питания делителя напряжения для рассчета сопротивления, (измерил мультиметром)
     //const float AdcResolution = 4095.0;        // разрешение АЦП STM32 12 bit (4095)
     //example_usage();
-    //HAL_GPIO_WritePin(CS__GPIO_Port, CS__Pin, GPIO_PIN_RESET);
     uint8_t res = MCP2515_Read_Register(0x0E);
-    //HAL_GPIO_WritePin(CS__GPIO_Port, CS__Pin, GPIO_PIN_SET);
     printf("%d\n", res);
     /*
     HAL_GPIO_WritePin(CS__GPIO_Port, CS__Pin, GPIO_PIN_RESET);
