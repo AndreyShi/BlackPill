@@ -96,6 +96,19 @@ float Read_VDD() {
     }
     return 0.0f;  // Ошибка
 }
+
+void Test_while_MCP2515(){
+  printf("цикл тестирования MCP2515\n");
+  int i = 0;
+  while(1){
+    if(i == 0)
+         { MCP2515_Write_Register(MCP2515_REG_CANCTRL, 0x80); i = 1;} // Режим конфигурации
+     else
+         { MCP2515_Write_Register(MCP2515_REG_CANCTRL, 0x00); i = 0;}
+     HAL_Delay(1000);
+     printf("CANCTRL %d\n",MCP2515_Read_Register(MCP2515_REG_CANCTRL));
+  }
+}
 /* USER CODE END 0 */
 
 /**
@@ -150,7 +163,9 @@ int main(void)
   uint8_t rx_data[8];
   uint8_t data_length;
   float engine_rpm = 0;
-  MCP2515_Init_With_Filter();
+  //Test_while_MCP2515();
+  MCP2515_Init_ISO15765();
+  //MCP2515_Init_With_Filter();
   int i = 0;
   /* USER CODE END 2 */
 

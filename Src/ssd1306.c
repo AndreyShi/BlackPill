@@ -7,7 +7,7 @@ OLED_HandleTypeDef oled;
 void OLED_WriteCommand(OLED_HandleTypeDef *oled, uint8_t command) {
     uint8_t data[2] = {OLED_COMMAND, command};
    HAL_StatusTypeDef status =  HAL_I2C_Master_Transmit(oled->hi2c, OLED_ADDRESS << 1, data, 2, HAL_MAX_DELAY);
-   printf("HAL_StatusTypeDef: %d\n",status);
+   //printf("HAL_StatusTypeDef: %d\n",status);
 }
 
 // Функция отправки данных
