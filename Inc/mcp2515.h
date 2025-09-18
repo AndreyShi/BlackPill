@@ -196,7 +196,7 @@ void MCP2515_Init_With_Filter(void);
   * @param  data: указатель на буфер для данных (минимум 8 байт)
   * @retval 0 - сообщения нет, >0 - количество принятых байт
   */
-uint8_t MCP2515_Read_Message_Polling(uint8_t *data);
+uint8_t MCP2515_Read_Message_Polling(uint8_t *data, uint8_t pid, uint32_t timeout);
 
 /**
   * @brief  Отправка OBD2 запроса на получение RPM

@@ -220,22 +220,27 @@ void MCP2515_Init_With_Filter(void) {
   * @param  data: указатель на буфер для данных (минимум 8 байт)
   * @retval 0 - сообщения нет, >0 - количество принятых байт
   */
-uint8_t MCP2515_Read_Message_Polling(uint8_t *data) {
-  // ОПРОС флага принятия сообщения в регистре CANINTF (бит 0 - RX0IF)
-  if (MCP2515_Read_Register(MCP2515_REG_CANINTF) & 0x01) {
-    
-    // Читаем DLC чтобы узнать длину данных
-    uint8_t dlc = MCP2515_Read_Register(MCP2515_REG_RXB0DLC) & 0x0F;
-    
-    // Читаем данные из буфера RXB0
-    for (int i = 0; i < dlc; i++) {
-      data[i] = MCP2515_Read_Register(MCP2515_REG_RXB0D0 + i);
-    }
-    
-    // !!! ВАЖНО: Сбрасываем флаг вручную, записывая 0 в бит RX0IF !!!
-    MCP2515_Write_Register(MCP2515_REG_CANINTF, 0x00);
-    
-    return dlc; // Возвращаем количество принятых байт
+uint8_t MCP2515_Read_Message_Polling(uint8_t *data, uint8_t pid, uint32_t timeout) {
+  uint32_t wait_start = HAL_GetTick();
+
+  while((HAL_GetTick() - wait_start) < timeout){
+    // ОПРОС флага принятия сообщения в регистре CANINTF (бит 0 - RX0IF)
+      if (MCP2515_Read_Register(MCP2515_REG_CANINTF) & 0x01) {
+        
+        // Читаем DLC чтобы узнать длину данных
+        uint8_t dlc = MCP2515_Read_Register(MCP2515_REG_RXB0DLC) & 0x0F;
+        
+        // Читаем данные из буфера RXB0
+        for (int i = 0; i < dlc; i++) {
+          data[i] = MCP2515_Read_Register(MCP2515_REG_RXB0D0 + i);
+        }
+        
+        // !!! ВАЖНО: Сбрасываем флаг вручную, записывая 0 в бит RX0IF !!!
+        MCP2515_Write_Register(MCP2515_REG_CANINTF, 0x00);
+        if(data[2] == pid)
+            { return dlc;} // Возвращаем количество принятых байт
+      }
+      HAL_Delay(1);
   }
   return 0; // Сообщения нет
 }
