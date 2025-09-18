@@ -160,14 +160,9 @@ int main(void)
     OLED_WriteString(1,&oled,3,0, "Line 4");
     OLED_Clear(&oled);
 
-  uint8_t rx_data[8];
-  uint8_t data_length;
-  float engine_rpm = 0;
   //Test_while_MCP2515();
   MCP2515_Init_ISO15765();
   //MCP2515_Init_With_Filter();
-  int i = 0;
-  uint32_t ticks =0;
   //HAL_Delay(7000);
   /* USER CODE END 2 */
 
@@ -177,15 +172,16 @@ int main(void)
   {
 
     // Отправляем запрос RPM
-    
-    ticks = HAL_GetTick();
-    MCP2515_Send_OBD_Request(CAN_OBD_REQUEST_ID, PID_ENGINE_RPM);  
-    if (MCP2515_Read_Message_Polling(rx_data, PID_ENGINE_RPM, 50) > 0) {
+    uint8_t rx_data[8] = {0};
+
+    MCP2515_Send_OBD_Request(CAN_OBD_REQUEST_ID, PID_ENGINE_RPM); 
+    uint8_t data_length = MCP2515_Read_Message_Polling(rx_data, PID_ENGINE_RPM, 50);
+    if (data_length > 0) {
       if(Handle_Negative_Response(rx_data, 8)){
           OLED_WriteString(0,&oled,1,0, "rpm: er    ");
       }else{
           //printf("RPM %x %x %x %x %x %x %x %x\n",rx_data[0],rx_data[1],rx_data[2],rx_data[3],rx_data[4],rx_data[5],rx_data[6],rx_data[7]);
-          engine_rpm = Parse_Engine_RPM(rx_data, 8);
+          float engine_rpm = Parse_Engine_RPM(rx_data, 8);
           OLED_WriteString(0,&oled,1,0, "rpm: %6.1f",engine_rpm);// 2567.1
       }
     }else{ printf("RPM message not coming\n");}  
