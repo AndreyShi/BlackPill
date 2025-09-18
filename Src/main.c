@@ -186,28 +186,40 @@ int main(void)
     HAL_Delay(50); 
     data_length = MCP2515_Read_Message_Polling(rx_data);
     if (data_length > 0) {
-      engine_rpm = Parse_Engine_RPM(rx_data, data_length);
-      uint32_t ticks1 = HAL_GetTick();
-      //printf("%x %x %x %x %x %x %x %x",rx_data[0],rx_data[1],rx_data[2],rx_data[3],rx_data[4],rx_data[5],rx_data[6],rx_data[7]);
-      //printf("  rmp %.1f ticks %d\n",engine_rpm, ticks1 - ticks);
-      OLED_WriteString(0,&oled,1,0, "rmp: %.1f",engine_rpm);
+      if(Handle_Negative_Response(rx_data, 8)){
+          OLED_WriteString(0,&oled,1,0, "rpm: er    ");
+      }else{
+          engine_rpm = Parse_Engine_RPM(rx_data, data_length);
+          uint32_t ticks1 = HAL_GetTick();
+          //printf("%x %x %x %x %x %x %x %x",rx_data[0],rx_data[1],rx_data[2],rx_data[3],rx_data[4],rx_data[5],rx_data[6],rx_data[7]);
+          //printf("  rmp %4.1f ticks %d\n",engine_rpm, ticks1 - ticks);
+          OLED_WriteString(0,&oled,1,0, "rpm: %6.1f",engine_rpm);// 2567.1
+      }
     }  
     //Отправляем запрос COOLANT
     MCP2515_Send_OBD_Request(CAN_OBD_REQUEST_ID, PID_COOLANT_TEMP);  
     HAL_Delay(50);
     if(MCP2515_Read_Message_Polling(rx_data) > 0){
-      float t = Parse_Coolant_Temperature(rx_data,8);
-      OLED_WriteString(0,&oled,2,0, "t: %.1f",t);
+      if(Handle_Negative_Response(rx_data, 8)){
+          OLED_WriteString(0,&oled,2,0, "t: er   ");
+      }else{
+          float t = Parse_Coolant_Temperature(rx_data,8);
+          OLED_WriteString(0,&oled,2,0, "t: %5.1f",t);  // 103.4
+      }
     }
     //Отправляем запрос Check Engine
     MCP2515_Send_OBD_Request(CAN_OBD_REQUEST_ID, PID_DTC_STATUS); 
     HAL_Delay(50);
     if(MCP2515_Read_Message_Polling(rx_data) > 0){
-      DTC_Status dt = Parse_DTC_Status(rx_data,8);
-      OLED_WriteString(0,&oled,3,0, "check: %d",dt.mil_status);
+      if(Handle_Negative_Response(rx_data, 8)){
+          OLED_WriteString(0,&oled,3,0, "check: er");
+      }else{
+          DTC_Status dt = Parse_DTC_Status(rx_data,8);
+          OLED_WriteString(0,&oled,3,0, "check: %2d",dt.mil_status);
+      }
     }
 
-    OLED_WriteString(1,&oled,0,0, "data_length: %d",data_length);
+    OLED_WriteString(1,&oled,0,0, "data_length: %3d",data_length);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

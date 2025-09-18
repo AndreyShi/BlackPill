@@ -252,6 +252,44 @@ DTC_Status Parse_DTC_Status(uint8_t *data, uint8_t length) {
   return status;
 }
 
+/**
+  * @brief  Обработка отрицательного ответа
+  */
+int Handle_Negative_Response(uint8_t *data, uint8_t length) {
+
+    if (data[1] != 0x71)
+        { return 0;}
+
+    if (length >= 4) {
+        uint8_t requested_service = data[2];
+        uint8_t error_code = data[3];
+        
+        printf("NRC: Service 0x%02X, Error: 0x%02X - ", requested_service, error_code);
+        
+        switch (error_code) {
+            case 0x11:
+                printf("Service not supported\n");
+                break;
+            case 0x12:
+                printf("Sub-function not supported\n");
+                break;
+            case 0x13:
+                printf("Invalid format\n");
+                break;
+            case 0x22:
+                printf("Conditions not correct\n");
+                break;
+            case 0x31:
+                printf("Request out of range\n");
+                break;
+            default:
+                printf("Unknown error\n");
+                break;
+        }
+    }
+    return 1;
+}
+
 
 // Пример использования в main.c или в другом месте
 void example_usage(void)

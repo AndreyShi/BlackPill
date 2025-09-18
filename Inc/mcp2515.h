@@ -29,12 +29,22 @@
 #define CAN_OBD_REQUEST_ID        0x7DF   // Широковещательный запрос
 #define CAN_OBD_RESPONSE_ID       0x7E8   // Ответ от двигателя
 
+// CAN ID для ISO 27145 (WWH-OBD)
+#define CAN_ISO27145_REQUEST_ID  0x18DB33F1  // WWH-OBD (29-bit)
+#define CAN_ISO27145_RESPONSE_ID 0x18DAF100  // WWH-OBD (29-bit)
+
 // PID коды
 #define PID_ENGINE_RPM            0x0C
 #define PID_COOLANT_TEMP          0x05    // Температура охлаждающей жидкости
 #define PID_DTC_STATUS            0x01    // Статус DTC (Diagnostic Trouble Codes)
 #define PID_FREEZE_DTC            0x02    // Замороженные кадры DTC
 
+
+#define NRC_SERVICE_NOT_SUPPORTED    0x11  // Сервис не поддерживается
+#define NRC_SUBFUNCTION_NOT_SUPPORTED 0x12 // Подфункция не поддерживается
+#define NRC_INVALID_FORMAT           0x13  // Неверный формат
+#define NRC_CONDITIONS_NOT_CORRECT   0x22  // Условия не выполнены
+#define NRC_REQUEST_OUT_OF_RANGE     0x31  // Запрос вне диапазона
 /**
   * @brief  Чтение одного регистра MCP2515.
   * @param  reg_addr: Адрес регистра для чтения (например, 0x00 - REG_CANSTAT)
@@ -103,6 +113,12 @@ typedef struct {
 } DTC_Status;
 
 DTC_Status Parse_DTC_Status(uint8_t *data, uint8_t length);
+
+
+/**
+  * @brief  Обработка отрицательного ответа
+  */
+int Handle_Negative_Response(uint8_t *data, uint8_t length);
 
 // Пример использования в main.c или в другом месте
 void example_usage(void);
