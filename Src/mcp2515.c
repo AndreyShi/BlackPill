@@ -218,6 +218,39 @@ float Parse_Engine_RPM(uint8_t *data, uint8_t length) {
   return 0.0;
 }
 
+/**
+  * @brief  Парсинг температуры охлаждающей жидкости
+  */
+float Parse_Coolant_Temperature(uint8_t *data, uint8_t length) {
+  // Формат ответа: [03] [41] [05] [T] [00] [00] [00] [00]
+  if (length >= 4 && data[1] == 0x41 && data[2] == PID_COOLANT_TEMP) {
+    uint8_t temp_value = data[3];
+    return temp_value - 40.0; // Формула: значение - 40 = температура в °C
+  }
+  return -40.0; // Значение по умолчанию/ошибка
+}
+
+/**
+  * @brief  Парсинг статуса DTC (Check Engine)
+  */
+DTC_Status Parse_DTC_Status(uint8_t *data, uint8_t length) {
+  DTC_Status status = {0};
+  
+  // Формат ответа: [04] [41] [01] [A] [B] [C] [D] [00]
+  if (length >= 8 && data[1] == 0x41 && data[2] == PID_DTC_STATUS) {
+    // Бит 7 байта A: статус MIL (0 - выкл, 1 - вкл)
+    status.mil_status = (data[3] >> 7) & 0x01;
+    
+    // Биты 6-0 байта A: количество DTC
+    status.dtc_count = data[3] & 0x7F;
+    
+    // Байты B, C, D содержат информацию о тестах
+    status.supported_tests = data[4];
+    status.test_completion = data[5];
+  }
+  
+  return status;
+}
 
 
 // Пример использования в main.c или в другом месте

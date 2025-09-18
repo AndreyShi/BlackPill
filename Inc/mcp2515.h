@@ -31,6 +31,9 @@
 
 // PID коды
 #define PID_ENGINE_RPM            0x0C
+#define PID_COOLANT_TEMP          0x05    // Температура охлаждающей жидкости
+#define PID_DTC_STATUS            0x01    // Статус DTC (Diagnostic Trouble Codes)
+#define PID_FREEZE_DTC            0x02    // Замороженные кадры DTC
 
 /**
   * @brief  Чтение одного регистра MCP2515.
@@ -83,6 +86,23 @@ void MCP2515_Send_OBD_Request(uint16_t can_id, uint8_t pid);
   * @brief  Парсинг RPM из данных OBD2 ответа
   */
 float Parse_Engine_RPM(uint8_t *data, uint8_t length);
+
+/**
+  * @brief  Парсинг температуры охлаждающей жидкости
+  */
+float Parse_Coolant_Temperature(uint8_t *data, uint8_t length);
+
+/**
+  * @brief  Парсинг статуса DTC (Check Engine)
+  */
+typedef struct {
+  uint8_t mil_status;        // 0 - MIL выключен, 1 - MIL включен (Check Engine)
+  uint8_t dtc_count;         // Количество активных DTC
+  uint8_t supported_tests;   // Поддерживаемые тесты
+  uint8_t test_completion;   // Завершение тестов
+} DTC_Status;
+
+DTC_Status Parse_DTC_Status(uint8_t *data, uint8_t length);
 
 // Пример использования в main.c или в другом месте
 void example_usage(void);

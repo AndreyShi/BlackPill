@@ -180,26 +180,34 @@ int main(void)
     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
     HAL_Delay(250);
 
-         // Отправляем запрос RPM
+    // Отправляем запрос RPM
     ticks = HAL_GetTick();
-    MCP2515_Send_OBD_Request(CAN_OBD_REQUEST_ID, PID_ENGINE_RPM);
-    
-    // Ждем немного, пока придет ответ (зависит от сети и ЭБУ)
+    MCP2515_Send_OBD_Request(CAN_OBD_REQUEST_ID, PID_ENGINE_RPM);  
     HAL_Delay(50); 
-
-    // ОПРАШ�?ВАЕМ контроллер на наличие сообщения
     data_length = MCP2515_Read_Message_Polling(rx_data);
-    printf("%x %x %x %x %x %x %x %x\n",rx_data[0],rx_data[1],rx_data[2],rx_data[3],rx_data[4],rx_data[5],rx_data[6],rx_data[7]);
-    //OLED_Clear(&oled);
     if (data_length > 0) {
       engine_rpm = Parse_Engine_RPM(rx_data, data_length);
       uint32_t ticks1 = HAL_GetTick();
-      //printf("rmp: %f\n",engine_rpm);
       //printf("%x %x %x %x %x %x %x %x",rx_data[0],rx_data[1],rx_data[2],rx_data[3],rx_data[4],rx_data[5],rx_data[6],rx_data[7]);
       //printf("  rmp %.1f ticks %d\n",engine_rpm, ticks1 - ticks);
-      OLED_WriteString(0,&oled,1,0, "rmp: %.1f\n",engine_rpm);
+      OLED_WriteString(0,&oled,1,0, "rmp: %.1f",engine_rpm);
     }  
-    OLED_WriteString(1,&oled,0,0, "data_length: %d\n",data_length);
+    //Отправляем запрос COOLANT
+    MCP2515_Send_OBD_Request(CAN_OBD_REQUEST_ID, PID_COOLANT_TEMP);  
+    HAL_Delay(50);
+    if(MCP2515_Read_Message_Polling(rx_data) > 0){
+      float t = Parse_Coolant_Temperature(rx_data,8);
+      OLED_WriteString(0,&oled,2,0, "t: %.1f",t);
+    }
+    //Отправляем запрос Check Engine
+    MCP2515_Send_OBD_Request(CAN_OBD_REQUEST_ID, PID_DTC_STATUS); 
+    HAL_Delay(50);
+    if(MCP2515_Read_Message_Polling(rx_data) > 0){
+      DTC_Status dt = Parse_DTC_Status(rx_data,8);
+      OLED_WriteString(0,&oled,3,0, "check: %d",dt.mil_status);
+    }
+
+    OLED_WriteString(1,&oled,0,0, "data_length: %d",data_length);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
