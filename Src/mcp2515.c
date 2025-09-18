@@ -114,6 +114,77 @@ void MCP2515_Init_ISO15765(void) {
   HAL_Delay(10);
 }
 
+/*
+  * Инициализация MCP2515 для ISO 27145-4 (WWH-OBD)
+  * 29-битные идентификаторы, фильтрация на ответы ECU
+  */
+void MCP2515_Init_ISO27145(void) {
+  // 1. Режим конфигурации
+  MCP2515_Write_Register(MCP2515_REG_CANCTRL, 0x80);
+  HAL_Delay(10);
+
+  // 2. Настройка битрейта
+  MCP2515_Write_Register(MCP2515_REG_CNF1, 0x00);
+  MCP2515_Write_Register(MCP2515_REG_CNF2, 0xD0);
+  MCP2515_Write_Register(MCP2515_REG_CNF3, 0x02);
+
+  // 3. НАСТРОЙКА ФИЛЬТРА RXF0 на прием 0x18DAF100
+  MCP2515_Write_Register(MCP2515_REG_RXF0SIDH, (uint8_t)(0x18DAF100 >> 21));
+  MCP2515_Write_Register(MCP2515_REG_RXF0SIDL, (uint8_t)(0x18DAF100 >> 13));
+  MCP2515_Write_Register(MCP2515_REG_RXF0EID8, (uint8_t)(0x18DAF100 >> 5));
+  MCP2515_Write_Register(MCP2515_REG_RXF0EID0, (uint8_t)(0x18DAF100 << 3));
+
+  // 4. НАСТРОЙКА МАСКИ RXM0 (проверять все биты)
+  MCP2515_Write_Register(MCP2515_REG_RXM0SIDH, 0xFF); // Все биты SIDH
+  MCP2515_Write_Register(MCP2515_REG_RXM0SIDL, 0xE3); // Все биты SIDL + EID
+  MCP2515_Write_Register(MCP2515_REG_RXM0EID8, 0xFF); // Все биты EID8
+  MCP2515_Write_Register(MCP2515_REG_RXM0EID0, 0xFF); // Все биты EID0
+
+  // 5. Настройка буфера RXB0 на использование фильтра 0
+  MCP2515_Write_Register(MCP2515_REG_RXB0CTRL, 0x20); // Использовать фильтры
+
+  // 6. Включение Extended ID режима
+  uint8_t rxctrl = MCP2515_Read_Register(MCP2515_REG_RXB0CTRL);
+  MCP2515_Write_Register(MCP2515_REG_RXB0CTRL, rxctrl | 0x08); // EXIDEN=1
+
+  // 7. Возврат в нормальный режим
+  MCP2515_Write_Register(MCP2515_REG_CANCTRL, 0x00);
+  HAL_Delay(10);
+}
+
+/**
+  * @brief  Отправка через TXB0 (самый простой вариант)
+  */
+void MCP2515_Send_ISO27145_TXB0_Extended(uint32_t can_id, uint8_t *data, uint8_t length) {
+  // Запись ID и данных
+  MCP2515_Write_Register(MCP2515_REG_TXB0SIDH, (uint8_t)(can_id >> 21));
+  MCP2515_Write_Register(MCP2515_REG_TXB0SIDL, (uint8_t)(can_id >> 13));
+  MCP2515_Write_Register(MCP2515_REG_TXB0EID8, (uint8_t)(can_id >> 5));
+  MCP2515_Write_Register(MCP2515_REG_TXB0EID0, (uint8_t)(can_id << 3));
+  
+  // Установка EXIDE бита
+  uint8_t sidl = MCP2515_Read_Register(MCP2515_REG_TXB0SIDL);
+  MCP2515_Write_Register(MCP2515_REG_TXB0SIDL, sidl | 0x08);
+  
+  // Данные
+  MCP2515_Write_Register(MCP2515_REG_TXB0DLC, length);
+  for (int i = 0; i < length; i++) {
+    MCP2515_Write_Register(MCP2515_REG_TXB0D0 + i, data[i]);
+  }
+  
+  // RTS для TXB0
+  uint8_t rts_cmd = MCP2515_CMD_RTS_TX0;
+  HAL_GPIO_WritePin(CS__GPIO_Port, CS__Pin, GPIO_PIN_RESET);
+  HAL_SPI_Transmit(&hspi1, &rts_cmd, 1, HAL_MAX_DELAY);
+  HAL_GPIO_WritePin(CS__GPIO_Port, CS__Pin, GPIO_PIN_SET);
+}
+
+// Отправка ISO 27145 запроса
+void Send_WWH_OBD_Request(void) {
+  uint8_t uds_data[] = {0x02, 0x10, 0x85, 0x0C, 0x00}; // UDS запрос RPM
+  MCP2515_Send_ISO27145_TXB0_Extended(0x18DB33F1, uds_data, 5);
+}
+
 /**
   * @brief  Инициализация MCP2515 с фильтром на OBD ответы
   */

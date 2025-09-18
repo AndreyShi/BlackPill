@@ -5,7 +5,23 @@
 #define MCP2515_CMD_READ          0x03
 #define MCP2515_CMD_WRITE         0x02
 #define MCP2515_CMD_BIT_MODIFY    0x05
-#define MCP2515_CMD_RTS_TX0       0x81
+
+// Команды SPI для MCP2515
+#define MCP2515_CMD_RESET     0xC0  // Сброс контроллера
+#define MCP2515_CMD_RTS       0x80  // Базовый RTS команда
+
+// Команды RTS (Request To Send) для конкретных буферов
+#define MCP2515_CMD_RTS_TX0   0x81  // Запрос отправки для TXB0
+#define MCP2515_CMD_RTS_TX1   0x82  // Запрос отправки для TXB1  
+#define MCP2515_CMD_RTS_TX2   0x84  // Запрос отправки для TXB2
+#define MCP2515_CMD_RTS_ALL   0x87  // Запрос отправки для всех буферов
+
+// Команды чтения с автоматическим инкрементом
+#define MCP2515_CMD_READ_RX0  0x90  // Чтение RXB0 с автоинкрементом
+#define MCP2515_CMD_READ_RX1  0x94  // Чтение RXB1 с автоинкрементом
+
+// Команды изменения битов
+#define MCP2515_CMD_BITMOD    0x05  // Изменение отдельных битов
 
 // Важные регистры MCP2515
 #define MCP2515_REG_CANCTRL       0x0F
@@ -45,6 +61,92 @@
 #define NRC_INVALID_FORMAT           0x13  // Неверный формат
 #define NRC_CONDITIONS_NOT_CORRECT   0x22  // Условия не выполнены
 #define NRC_REQUEST_OUT_OF_RANGE     0x31  // Запрос вне диапазона
+
+#define MCP2515_REG_RXM0SIDH  0x20  // Маска 0 Standard ID High
+#define MCP2515_REG_RXM0SIDL  0x21  // Маска 0 Standard ID Low + Extended ID
+#define MCP2515_REG_RXM0EID8  0x22  // Маска 0 Extended ID High
+#define MCP2515_REG_RXM0EID0  0x23  // Маска 0 Extended ID Low
+
+#define MCP2515_REG_RXM1SIDH  0x24  // Маска 1 Standard ID High  
+#define MCP2515_REG_RXM1SIDL  0x25  // Маска 1 Standard ID Low + Extended ID
+#define MCP2515_REG_RXM1EID8  0x26  // Маска 1 Extended ID High
+#define MCP2515_REG_RXM1EID0  0x27  // Маска 1 Extended ID Low
+
+// Фильтры RXF0 - RXF5
+#define MCP2515_REG_RXF0SIDH  0x00  // Фильтр 0 Standard ID High
+#define MCP2515_REG_RXF0SIDL  0x01  // Фильтр 0 Standard ID Low + Extended ID
+#define MCP2515_REG_RXF0EID8  0x02  // Фильтр 0 Extended ID High
+#define MCP2515_REG_RXF0EID0  0x03  // Фильтр 0 Extended ID Low
+
+#define MCP2515_REG_RXF1SIDH  0x04  // Фильтр 1 Standard ID High
+#define MCP2515_REG_RXF1SIDL  0x05  // Фильтр 1 Standard ID Low + Extended ID
+#define MCP2515_REG_RXF1EID8  0x06  // Фильтр 1 Extended ID High
+#define MCP2515_REG_RXF1EID0  0x07  // Фильтр 1 Extended ID Low
+
+#define MCP2515_REG_RXF2SIDH  0x08  // Фильтр 2 Standard ID High
+#define MCP2515_REG_RXF2SIDL  0x09  // Фильтр 2 Standard ID Low + Extended ID
+#define MCP2515_REG_RXF2EID8  0x0A  // Фильтр 2 Extended ID High
+#define MCP2515_REG_RXF2EID0  0x0B  // Фильтр 2 Extended ID Low
+
+#define MCP2515_REG_RXF3SIDH  0x10  // Фильтр 3 Standard ID High
+#define MCP2515_REG_RXF3SIDL  0x11  // Фильтр 3 Standard ID Low + Extended ID
+#define MCP2515_REG_RXF3EID8  0x12  // Фильтр 3 Extended ID High
+#define MCP2515_REG_RXF3EID0  0x13  // Фильтр 3 Extended ID Low
+
+#define MCP2515_REG_RXF4SIDH  0x14  // Фильтр 4 Standard ID High
+#define MCP2515_REG_RXF4SIDL  0x15  // Фильтр 4 Standard ID Low + Extended ID
+#define MCP2515_REG_RXF4EID8  0x16  // Фильтр 4 Extended ID High
+#define MCP2515_REG_RXF4EID0  0x17  // Фильтр 4 Extended ID Low
+
+#define MCP2515_REG_RXF5SIDH  0x18  // Фильтр 5 Standard ID High
+#define MCP2515_REG_RXF5SIDL  0x19  // Фильтр 5 Standard ID Low + Extended ID
+#define MCP2515_REG_RXF5EID8  0x1A  // Фильтр 5 Extended ID High
+#define MCP2515_REG_RXF5EID0  0x1B  // Фильтр 5 Extended ID Low
+
+#define MCP2515_REG_TXB0CTRL  0x30  // Control register
+#define MCP2515_REG_TXB0SIDH  0x31  // Standard Identifier High
+#define MCP2515_REG_TXB0SIDL  0x32  // Standard Identifier Low + Extended ID
+#define MCP2515_REG_TXB0EID8  0x33  // Extended Identifier High
+#define MCP2515_REG_TXB0EID0  0x34  // Extended Identifier Low
+#define MCP2515_REG_TXB0DLC   0x35  // Data Length Code
+#define MCP2515_REG_TXB0D0    0x36  // Data Byte 0
+#define MCP2515_REG_TXB0D1    0x37  // Data Byte 1
+#define MCP2515_REG_TXB0D2    0x38  // Data Byte 2
+#define MCP2515_REG_TXB0D3    0x39  // Data Byte 3
+#define MCP2515_REG_TXB0D4    0x3A  // Data Byte 4
+#define MCP2515_REG_TXB0D5    0x3B  // Data Byte 5
+#define MCP2515_REG_TXB0D6    0x3C  // Data Byte 6
+#define MCP2515_REG_TXB0D7    0x3D  // Data Byte 7
+
+#define MCP2515_REG_TXB1CTRL  0x40  // Control register
+#define MCP2515_REG_TXB1SIDH  0x41  // Standard Identifier High
+#define MCP2515_REG_TXB1SIDL  0x42  // Standard Identifier Low + Extended ID
+#define MCP2515_REG_TXB1EID8  0x43  // Extended Identifier High
+#define MCP2515_REG_TXB1EID0  0x44  // Extended Identifier Low
+#define MCP2515_REG_TXB1DLC   0x45  // Data Length Code
+#define MCP2515_REG_TXB1D0    0x46  // Data Byte 0
+#define MCP2515_REG_TXB1D1    0x47  // Data Byte 1
+#define MCP2515_REG_TXB1D2    0x48  // Data Byte 2
+#define MCP2515_REG_TXB1D3    0x49  // Data Byte 3
+#define MCP2515_REG_TXB1D4    0x4A  // Data Byte 4
+#define MCP2515_REG_TXB1D5    0x4B  // Data Byte 5
+#define MCP2515_REG_TXB1D6    0x4C  // Data Byte 6
+#define MCP2515_REG_TXB1D7    0x4D  // Data Byte 7
+
+#define MCP2515_REG_TXB2CTRL  0x50  // Control register
+#define MCP2515_REG_TXB2SIDH  0x51  // Standard Identifier High
+#define MCP2515_REG_TXB2SIDL  0x52  // Standard Identifier Low + Extended ID
+#define MCP2515_REG_TXB2EID8  0x53  // Extended Identifier High
+#define MCP2515_REG_TXB2EID0  0x54  // Extended Identifier Low
+#define MCP2515_REG_TXB2DLC   0x55  // Data Length Code
+#define MCP2515_REG_TXB2D0    0x56  // Data Byte 0
+#define MCP2515_REG_TXB2D1    0x57  // Data Byte 1
+#define MCP2515_REG_TXB2D2    0x58  // Data Byte 2
+#define MCP2515_REG_TXB2D3    0x59  // Data Byte 3
+#define MCP2515_REG_TXB2D4    0x5A  // Data Byte 4
+#define MCP2515_REG_TXB2D5    0x5B  // Data Byte 5
+#define MCP2515_REG_TXB2D6    0x5C  // Data Byte 6
+#define MCP2515_REG_TXB2D7    0x5D  // Data Byte 7
 /**
   * @brief  Чтение одного регистра MCP2515.
   * @param  reg_addr: Адрес регистра для чтения (например, 0x00 - REG_CANSTAT)
@@ -72,6 +174,15 @@ void MCP2515_Read_Registers(uint8_t start_reg_addr, uint8_t *buffer, uint8_t cou
   *         Без использования прерываний (режим опроса).
   */
 void MCP2515_Init_ISO15765(void);
+
+/*
+  * Инициализация MCP2515 для ISO 27145-4 (WWH-OBD)
+  * 29-битные идентификаторы, фильтрация на ответы ECU
+  */
+void MCP2515_Init_ISO27145(void);
+
+
+void MCP2515_Send_ISO27145_TXB0_Extended(uint32_t can_id, uint8_t *data, uint8_t length);
 
 
 /**
