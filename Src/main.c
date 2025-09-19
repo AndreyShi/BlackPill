@@ -187,7 +187,7 @@ int main(void)
           float engine_rpm = Parse_Engine_RPM(rx_data, 8);
           OLED_WriteString(0,&oled,1,0, "rpm: %6.1f",engine_rpm);// 2567.1
       }
-    }else{ printf("RPM message not coming \n"); }  
+    }else{ print("RPM message not coming \n"); }  
 
     //Отправляем запрос COOLANT
     MCP2515_Send_OBD_Request(CAN_OBD_REQUEST_ID, PID_COOLANT_TEMP);  
@@ -199,7 +199,7 @@ int main(void)
         float t = Parse_Coolant_Temperature(rx_data,8);
         OLED_WriteString(0,&oled,2,0, "t: %5.1f",t);  // 103.4
       }
-    }else{ printf("TEMP message not coming \n");}  
+    }else{ print("TEMP message not coming \n");}  
 
     //Отправляем запрос Check Engine
     MCP2515_Send_OBD_Request(CAN_OBD_REQUEST_ID, PID_DTC_STATUS); 
@@ -211,7 +211,7 @@ int main(void)
         DTC_Status dt = Parse_DTC_Status(rx_data,8);
         OLED_WriteString(0,&oled,3,0, "check: %2d",dt.mil_status);
       }
-    }else{ printf("DTC message not coming \n");}
+    }else{ print("DTC message not coming \n");}
 
     //memset(rx_data,0,8);
     OLED_WriteString(1,&oled,0,0, "data_length: %3d",data_length);
@@ -514,6 +514,19 @@ int _write(int file, char *ptr, int len)
   //DBG_PIN_RS;
   return len;
 } 
+
+void print(const char *format, ...) {
+  char buffer[128]; // Подберите размер под ваши нужды
+  va_list args;
+  
+  va_start(args, format);
+  int len = vsnprintf(buffer, sizeof(buffer), format, args);
+  va_end(args);
+  
+  if (len > 0) {
+    CDC_Transmit_FS((uint8_t *)buffer, len);
+  }
+}
 /* USER CODE END 4 */
 
 /**

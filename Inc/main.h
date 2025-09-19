@@ -31,7 +31,7 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+void print(const char *format, ...);
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
