@@ -169,8 +169,11 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
-  {
-
+  { 
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
+    //HAL_Delay(250);
+    //HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
+    //HAL_Delay(250);
     // Отправляем запрос RPM
     uint8_t rx_data[8] = {0};
 
@@ -184,8 +187,8 @@ int main(void)
           float engine_rpm = Parse_Engine_RPM(rx_data, 8);
           OLED_WriteString(0,&oled,1,0, "rpm: %6.1f",engine_rpm);// 2567.1
       }
-    }else{ printf("RPM message not coming\n");}  
-    
+    }else{ printf("RPM message not coming \n"); }  
+
     //Отправляем запрос COOLANT
     MCP2515_Send_OBD_Request(CAN_OBD_REQUEST_ID, PID_COOLANT_TEMP);  
     if(MCP2515_Read_Message_Polling(rx_data, PID_COOLANT_TEMP, 50) > 0){
@@ -196,8 +199,8 @@ int main(void)
         float t = Parse_Coolant_Temperature(rx_data,8);
         OLED_WriteString(0,&oled,2,0, "t: %5.1f",t);  // 103.4
       }
-    }else{ printf("TEMP message not coming\n");}  
-    
+    }else{ printf("TEMP message not coming \n");}  
+
     //Отправляем запрос Check Engine
     MCP2515_Send_OBD_Request(CAN_OBD_REQUEST_ID, PID_DTC_STATUS); 
     if(MCP2515_Read_Message_Polling(rx_data, PID_DTC_STATUS, 50) > 0){
@@ -208,8 +211,8 @@ int main(void)
         DTC_Status dt = Parse_DTC_Status(rx_data,8);
         OLED_WriteString(0,&oled,3,0, "check: %2d",dt.mil_status);
       }
-    }else{ printf("DTC message not coming\n");}
-    
+    }else{ printf("DTC message not coming \n");}
+
     //memset(rx_data,0,8);
     OLED_WriteString(1,&oled,0,0, "data_length: %3d",data_length);
     /* USER CODE END WHILE */
